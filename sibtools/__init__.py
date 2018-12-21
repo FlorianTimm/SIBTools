@@ -4,6 +4,9 @@
 
 Version: 2018.12.20
 """
+import os
+from datetime import datetime
+
 import requests
 from xml.etree import ElementTree
 import xml.dom.minidom
@@ -13,7 +16,7 @@ import xml.dom.minidom
 
 # Nicht-Standar-Python
 from requests.auth import HTTPBasicAuth
-# import dbf
+import dbf
 
 
 class DataSource (object):  # (abc.ABC):
@@ -320,6 +323,7 @@ class CsvData (DataSource, DataTarget):
 
 
 class DbfData (DataSource, DataTarget):
+    __zeile = 0
 
     def __init__(self, filename):
         """
@@ -328,32 +332,116 @@ class DbfData (DataSource, DataTarget):
         :type filename: str
         """
         self.__filename = filename
+        self.__table = None
+
+    def __del__(self):
+        if self.__table is not None:
+            self.__table.close()
 
     def _read_line(self):
         """
         Liest eine Zeile des Importes
         :return: Datenzeile des Datensatzes
-        :rtype: list
+        :rtype: dict
         """
-        # TODO Funktion erstellen
-        pass
+        if self.__table is None:
+            self.__table = dbf.Table(self.__filename)
+            # table = dbf.Table("sort.DBF")
+            self.__table.open(mode=dbf.READ_ONLY)
+
+        if self.__zeile >= len(self.__table):
+            return None
+        zeile = self.__table[self.__zeile]
+        liste = {}
+        for att in self.get_columns():
+            f = zeile[att]
+            if f is None or (type(zeile[att]) == str and zeile[att].strip() == ""):
+                continue
+            if type(f) == str:
+                f = f.strip()
+            if f == "":
+                continue
+            liste[att] = f
+        self.__zeile += 1
+        return liste
 
     def reset_line(self):
         """
         Setzt den Iterator auf den Startwert zurück
         """
-        # TODO Funktion schreiben
+        self.__zeile = 0
 
-    def write(self, data):
+    __rename_col = {}
+
+    def write(self, datasource):
         """
         Schreibt eine Zeile zum Importieren
-        :param data: Datenzeile des Importes
-        :type data: dict
+        :param datasource: Importdaten
+        :type datasource: DataSource
         :return: Erfolgreich importiert?
         :rtype: bool
         """
-        # TODO Funktion erstellen
-        pass
+        spalten = datasource.get_columns()
+
+        if self.__table is None:
+            if os.path.isfile(self.__filename):
+                self.__table = dbf.Table(self.__filename)
+                # table = dbf.Table("sort.DBF")
+                self.__table.open(mode=dbf.READ_WRITE)
+                for f in self.__table.structure():
+                    fk = f.split(" ")[0]
+                    self.__rename_col[fk] = fk
+            else:
+                types = ""
+                col = {}
+                for spalte in spalten:
+                    spaltenname = spalte.replace(".", "_").lower()
+                    if len(spaltenname) > 10:
+                        spaltenname = spaltenname[:10]
+
+                    i = 0
+                    while spaltenname in col:
+                        spaltenname = spaltenname[:-len(str(i))] + str(i)
+                        i += 1
+
+                    self.__rename_col[spalte] = spaltenname
+                    col[spaltenname] = True
+
+                    if spalten[spalte] == int:
+                        types += spaltenname + " N(19,0);"
+                    elif spalten[spalte] == float:
+                        types += spaltenname + " N(19,5);"
+                    elif spalten[spalte] == datetime:
+                        types += spaltenname + " D;"
+                    else:
+                        types += spaltenname + " C(255);"
+                print(self.__rename_col)
+                self.__table = dbf.Table(self.__filename, types[:-1])
+                self.__table.open(mode=dbf.READ_WRITE)
+
+        while True:
+            zeile = datasource.read_line()
+            if zeile is None:
+                break
+            liste = {}
+            for z in zeile:
+                if z in self.__rename_col:
+                    print(zeile[z])
+                    if type(zeile[z]) == str:
+                        liste[self.__rename_col[z]] = str(zeile[z])\
+                            .replace("ä", "ae")\
+                            .replace("Ä", "Ae")\
+                            .replace("ö", "oe")\
+                            .replace("Ö", "oe")\
+                            .replace("ü", "ue")\
+                            .replace("Ü", "Ue")\
+                            .replace("ß", "ss")
+                    else:
+                        liste[self.__rename_col[z]] = zeile[z]
+            # print(liste)
+            for l in liste:
+                print(l + " (" + str(type(liste[l])) + "): " + str(liste[l]))
+            self.__table.append(liste)
 
     def _get_columns(self):
         """
@@ -361,8 +449,20 @@ class DbfData (DataSource, DataTarget):
         :return: Spalten der Quelle
         :rtype: dict
         """
-        # TODO Funktion programmieren
-        pass
+        liste = {}
+        for field in self.__table.structure():
+            arr = field.split(" ")
+            # print(arr[1])
+            if arr[1][0] == "N" and arr[1][-3:] == ",0)":
+                typ = int
+            elif arr[1][0] == "N":
+                typ = float
+            elif arr[1][0] == "D":
+                typ = datetime
+            else:
+                typ = str
+            liste[arr[0]] = typ
+        return liste
 
 
 class WfsData(DataSource):
@@ -550,6 +650,8 @@ class WfsData(DataSource):
                 types.append([itx.text, bez.text])
         return types
 
+    __featureDescr = {}
+
     def describe_feature_type(self, feature_type=None):
         """
         Lädt die Beschreibung des Feature Types vom WFS
@@ -559,6 +661,9 @@ class WfsData(DataSource):
         """
         if feature_type is None:
             feature_type = self._feature_type
+
+        if feature_type in self.__featureDescr:
+            return self.__featureDescr[feature_type]
 
         soap = """<?xml version="1.0" encoding="ISO-8859-1"?>
             <wfs:DescribeFeatureType service="WFS" version="1.1.0" xmlns="http://www.opengis.net/wfs" 
@@ -585,7 +690,10 @@ class WfsData(DataSource):
             if ann is None:
                 continue
             zeile['bezeichnung'] = ann.find('{http://www.w3.org/2001/XMLSchema}documentation').text
+
             app = ann.find('{http://www.w3.org/2001/XMLSchema}appinfo')
+            if app is None:
+                continue
 
             read_only = app.find('{http://xml.novasib.de}readOnly')
             if read_only is not None and read_only.text == 'true':
@@ -607,7 +715,9 @@ class WfsData(DataSource):
             digits = typ.find('{http://www.w3.org/2001/XMLSchema}totalDigits')
             if digits is not None:
                 zeile['type'] += "(" + digits.attrib['value'] + ")"
-        return attributes
+
+        self.__featureDescr[feature_type] = attributes
+        return self.__featureDescr[feature_type]
 
     def _soap_request(self, soap):
         """
@@ -620,7 +730,7 @@ class WfsData(DataSource):
         headers = {'content-type': 'text/xml'}
         login = HTTPBasicAuth(self._username, self._password)
         response = requests.post(self._url, data=soap, headers=headers, auth=login)
-        print(soap)
+        # print(soap)
         return response.content
 
     @staticmethod
@@ -660,6 +770,57 @@ class PublicWfsData (WfsData, DataTarget):
         self.row_number = -1
         self.__kurzfassen = kurzfassen
         self.__klartexte_anhaengen = klartexte_anhaengen
+
+    __columns = {}
+
+    def _get_columns(self):
+        """
+        Gibt die Spalten des Importes zurück
+        :return: Spalten der Quelle
+        :rtype: dict
+        """
+        if len(self.__columns) > 0:
+            return self.__columns
+
+        dft = self.describe_feature_type()
+
+        for att in dft:
+            typ = str
+            if 'type' in dft[att]:
+                typ = self.__describe_ft2type(dft[att]['type'])
+            self.__columns[att] = typ
+            if 'klartext' in dft[att]:
+                if not self.__kurzfassen:
+                    self.__columns[att + ".href"] = str
+                    self.__columns[att + ".typeName"] = str
+                    self.__columns[att + ".luk"] = typ
+                if self.__klartexte_anhaengen:
+                    dft2 = self.describe_feature_type(dft[att]['klartext'])
+                    for att2 in dft2:
+                        typ2 = str
+                        if 'type' in dft2[att2]:
+                            typ2 = self.__describe_ft2type(dft2[att2]['type'])
+                        self.__columns[att + "." + att2] = typ2
+        return self.__columns
+
+    @staticmethod
+    def __describe_ft2type(dft_type):
+        """
+        Formt den Typ aus der DescribeFeatureType-Funktion um in Python
+        :param dft_type: Typ aus DFT
+        :type dft_type: str
+        :return: Python-Typ
+        :rtype: type
+        """
+        if dft_type.find('string') > 0:
+            return str
+        elif dft_type.find('integer') > 0:
+            return int
+        elif dft_type.find('float') > 0:
+            return float
+        elif dft_type.find('datetime') > 0 or dft_type.find('date') > 0:
+            return datetime
+        return str
 
     def _read_line(self):
         """
@@ -748,20 +909,21 @@ class PublicWfsData (WfsData, DataTarget):
         :return: Liste von Dictionarys mit den Attributen
         :rtype: list
         """
+        col = self._get_columns()
         for obj in self.__load_features(wfs_filter=self._wfs_filter):
             d = {}
             for i in obj.getchildren():
                 att = i.tag.split('}', 1)[1]
                 if i.text is not None:
-                    d[att] = i.text
+                    d[att] = self.__transform_type(att, i.text)
                     continue
                 if 'luk' in i.attrib:
-                    d[att] = i.attrib['luk']
+                    d[att] = self.__transform_type(att, i.attrib['luk'])
                 if self.__kurzfassen:
                     continue
                 for a in i.attrib:
                     att2 = att + "." + a.split('}', 1).pop()
-                    d[att2] = i.attrib[a]
+                    d[att2] = self.__transform_type(att2, i.attrib[a])
                 if not self.__klartexte_anhaengen:
                     continue
                 if 'typeName' in i.attrib and \
@@ -769,9 +931,23 @@ class PublicWfsData (WfsData, DataTarget):
                         i.attrib['typeName'] not in ['AsbAbschn', 'Projekt']:
                     kt = self.__get_klartext(i.attrib['typeName'], i.attrib['{http://www.w3.org/1999/xlink}href'])
                     for kt_att in kt:
-                        d[att + "." + kt_att] = kt[kt_att]
-            #print(d)
+                        d[att + "." + kt_att] = self.__transform_type(att + "." + kt_att, kt[kt_att])
+            # print(d)
             self.daten.append(d)
+
+    def __transform_type(self, attribut, wert):
+        col = self._get_columns()
+
+        if attribut in col:
+            if col[attribut] == datetime and len(wert) > 10:
+                return datetime.strptime(wert, "%Y-%m-%dT%H:%M:%S")
+            elif col[attribut] == datetime:
+                return datetime.strptime(wert, "%Y-%m-%d")
+            try:
+                return col[attribut](wert)
+            except TypeError:
+                pass
+        return wert
 
     def __get_klartext(self, feature_type, href):
         """
