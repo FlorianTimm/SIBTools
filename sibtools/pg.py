@@ -6,8 +6,7 @@ Ergänzung PostGIS-Schnittstelle
 Version: 2018.12.20
 """
 from sibtools import DataSource, DataTarget
-import psycopg2
-import psycopg2.extras
+import pg8000
 
 
 class PgData (DataSource, DataTarget):
@@ -15,7 +14,10 @@ class PgData (DataSource, DataTarget):
     PostGIS-Datenquelle/-ziel
     """
 
-    def __init__(self, host, port, db, username, password, sql):
+    __columns = {}
+    __select_executed = False
+
+    def __init__(self, host, port, db, username, password, select_sql=None, insert_table=None, insert_fieldnames=None):
         """
         Erstellt eine neue PostGIS-Datenquelle
         :param host:
@@ -28,17 +30,39 @@ class PgData (DataSource, DataTarget):
         :type username: str
         :param password:
         :type password: str
-        :param sql: SQL-Abfrage zum Im- oder Export
-                [Einfache Select-Abfrage für Export aus PostGIS (SELECT vnk, nnk, vst, bst, sonstwas FROM tab;),
-                Insert-PreparedStatement für Import (INSERT INTO tab (vnk, nnk, vst, bst, sonstwas)
-                    VALUES (%s,%s,%s,%s);)]
-        :type sql: str
+        :param select_sql: SQL-Abfrage zum Export
+                [Einfache Select-Abfrage für Export aus PostGIS (SELECT vnk, nnk, vst, bst, sonstwas FROM tab;)
+        :type select_sql: str
+        :param insert_table: Tabelle, in welche importiert werden soll (schema.table)
+        :type insert_table: str
+        :param insert_fieldnames: Zu importierende Felder
+        :type insert_fieldnames: list
         """
-        login = "host='" + host + "' dbname='" + db + "' port='" + str(port) + \
-                "' user='" + username + "' password='" + password + "'"
-        self.__db_connection = psycopg2.connect(login)
-        self.__sql = sql
-        self.__db_cursor = None
+        self.__db_connection = pg8000.connect(username, host, None, port, db, password)
+        self.__db_cursor = self.__db_connection.cursor()
+        self.__select_sql = select_sql
+        self.__insert_table = insert_table
+        self.__insert_fieldnames = insert_fieldnames
+
+    def config_select(self, select_sql):
+        """
+        Setzt die Parameter für den Datenexport
+        :param select_sql: SQL-Abfrage zum Export
+                [Einfache Select-Abfrage für Export aus PostGIS (SELECT vnk, nnk, vst, bst, sonstwas FROM tab;)
+        :type select_sql: str
+        """
+        self.__select_sql = select_sql
+
+    def set_insert_config(self,  insert_table, insert_fieldnames):
+        """
+        Setzt die Parameter für den Datenimport
+        :param insert_table: Tabelle, in welche importiert werden soll (schema.table)
+        :type insert_table: str
+        :param insert_fieldnames: Zu importierende Felder
+        :type insert_fieldnames: list
+        """
+        self.__insert_table = insert_table
+        self.__insert_fieldnames = insert_fieldnames
 
     def __del__(self):
         self.__db_connection.commit()
@@ -49,9 +73,8 @@ class PgData (DataSource, DataTarget):
         """
         Setzt den Iterator auf den Startwert zurück
         """
-        if self.__db_cursor is None:
-            self.__execute_select_query()
-        self.__db_cursor.scroll(0, 'absolute')
+        self.__execute_select_query()
+        # self.__db_cursor.scroll(0, 'absolute')
 
     def _read_line(self):
         """
@@ -59,7 +82,7 @@ class PgData (DataSource, DataTarget):
         :return: Datenzeile des Datensatzes
         :rtype: dict
         """
-        if self.__db_cursor is None:
+        if not self.__select_executed:
             self.__execute_select_query()
         col = list(self._get_columns().keys())
 
@@ -80,25 +103,34 @@ class PgData (DataSource, DataTarget):
         :return: Spalten der Quelle
         :rtype: dict
         """
+        if len(self.__columns) > 0:
+            return self.__columns
+
         column_types = {
             16: bool,
             23: int,
             25: str,
             701: float,
-            1043: str,
-            16400: None
+            1043: str
         }
 
-        if self.__db_cursor is None:
+        if not self.__select_executed:
             self.__execute_select_query()
         columns = {}
         for c in self.__db_cursor.description:
-            columns[c.name] = column_types[c.type_code]
+            # print(c)
+            if c[1] not in column_types:
+                columns[c[0].decode("utf-8")] = None
+            else:
+                columns[c[0].decode("utf-8")] = column_types[c[1]]
+        self.__columns = columns
         return columns
 
     def __execute_select_query(self):
-        self.__db_cursor = self.__db_connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        self.__db_cursor.execute(self.__sql)
+        if self.__select_sql is None:
+            raise Exception("Vorher SELECT-Config ausfüllen")
+        self.__db_cursor.execute(self.__select_sql)
+        self.__select_executed = True
 
     def write(self, data_source):
         """
@@ -108,16 +140,31 @@ class PgData (DataSource, DataTarget):
         :return: Erfolgreich importiert?
         :rtype: bool
         """
-        if self.__db_cursor is None:
-            self.__prepare_insert_statement()
-        self.__db_cursor.execute(data_source)
+        if len(self.__insert_fieldnames) is None or self.__insert_table is None:
+            raise Exception("Vorher INSERT-Config ausfüllen")
 
-        # TODO Funktion schreiben
-        pass
+        liste = []
 
-    def __prepare_insert_statement(self):
-        """
-        Bereitet das SQL-Statement für den Insert vor
-        """
-        self.__db_cursor = self.__db_connection.cursor()
-        self.__db_cursor.prepare(self.__sql)
+        sql = "INSERT INTO " + self.__insert_table + "("
+        for c in self.__insert_fieldnames:
+            sql += c + ","
+        sql = sql[:-1] + ") values ("
+        for _ in self.__insert_fieldnames:
+            sql += "%s,"
+        sql = sql[:-1] + ")"
+
+        print(sql)
+
+        while True:
+            data = data_source.read_line()
+            zeile = []
+            if data is None:
+                break
+            for field in self.__insert_fieldnames:
+                if field in data:
+                    zeile.append(data[field])
+            liste.append(zeile)
+
+        self.__db_cursor.executemany(sql, liste)
+        self.__db_connection.commit()
+
