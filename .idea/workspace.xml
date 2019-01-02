@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3576d2bf-4abd-42cf-8989-fe730f85905f" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sibtools/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/sibtools/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/TestImport.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/TestImport.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -19,58 +16,15 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sibtools/__init__.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-25">
-              <caret line="438" column="25" lean-forward="true" selection-start-line="438" selection-start-column="25" selection-end-line="438" selection-end-column="25" />
+            <state relative-caret-position="53">
+              <caret line="928" column="10" selection-start-line="928" selection-start-column="10" selection-end-line="928" selection-end-column="10" />
               <folding>
                 <element signature="e#97#106#0" expanded="true" />
-                <element signature="e#339#5593#0" />
-                <element signature="e#5641#6034#0" />
-                <element signature="e#6081#8929#0" />
+                <element signature="e#378#5632#0" />
+                <element signature="e#5680#6073#0" />
+                <element signature="e#6120#8968#0" />
+                <element signature="e#9015#13664#0" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/dbf/__init__.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="241">
-              <caret line="4415" column="21" selection-start-line="4415" selection-start-column="21" selection-end-line="4415" selection-end-column="38" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/dbf/_index.py">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/AppData/Roaming/Python/Python37/site-packages/dbf/__init__.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="172">
-              <caret line="3968" selection-start-line="3968" selection-end-line="3968" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/README.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="SPLIT">
-              <first_editor relative-caret-position="283">
-                <caret line="43" selection-start-line="43" selection-end-line="43" />
-              </first_editor>
-              <second_editor />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/setup.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="323">
-              <caret line="19" column="6" lean-forward="true" selection-start-line="19" selection-start-column="6" selection-end-line="19" selection-end-column="6" />
             </state>
           </provider>
         </entry>
@@ -78,32 +32,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tests/TestImport.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="313">
-              <caret line="140" column="2" selection-start-line="140" selection-start-column="2" selection-end-line="140" selection-end-column="2" />
-              <folding>
-                <element signature="e#0#22#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sibtools/ora.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="102">
-              <caret line="6" column="3" selection-start-line="6" selection-start-column="3" selection-end-line="6" selection-end-column="3" />
-              <folding>
-                <element signature="e#124#155#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sibtools/pg.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="119">
-              <caret line="7" column="43" selection-start-line="7" selection-start-column="43" selection-end-line="7" selection-end-column="43" />
+            <state relative-caret-position="17">
+              <caret line="1" column="2" selection-start-line="1" selection-start-column="2" selection-end-line="1" selection-end-column="2" />
             </state>
           </provider>
         </entry>
@@ -119,17 +49,9 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>proper</find>
-      <find>load_f</find>
-      <find>print</find>
-      <find>oraDa</find>
-      <find>split</find>
-      <find>klart</find>
-      <find>reque</find>
       <find>__pa</find>
       <find>print(bod</find>
       <find>klartexte_a</find>
-      <find>soap</find>
       <find>print(soap)</find>
       <find>dbf</find>
       <find>struc</find>
@@ -149,6 +71,14 @@
       <find>append</find>
       <find>date</find>
       <find>unicode_error_han</find>
+      <find>soap</find>
+      <find>wfs</find>
+      <find>soap_re</find>
+      <find />
+      <find>get_da</find>
+      <find>getfea</find>
+      <find>“</find>
+      <find>do_soap</find>
     </findStrings>
     <replaceStrings>
       <replace>List</replace>
@@ -162,6 +92,8 @@
       <replace>nach_xlink</replace>
       <replace>href</replace>
       <replace>ogc:</replace>
+      <replace />
+      <replace>&quot;</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -201,6 +133,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -216,17 +149,6 @@
             <path>
               <item name="SIBTools" type="b2602c69:ProjectViewProjectNode" />
               <item name="SIBTools" type="462c0819:PsiDirectoryNode" />
-              <item name="lib" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="SIBTools" type="b2602c69:ProjectViewProjectNode" />
-              <item name="SIBTools" type="462c0819:PsiDirectoryNode" />
-              <item name="lib" type="462c0819:PsiDirectoryNode" />
-              <item name="dbf" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="SIBTools" type="b2602c69:ProjectViewProjectNode" />
-              <item name="SIBTools" type="462c0819:PsiDirectoryNode" />
               <item name="sibtools" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -238,7 +160,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -352,13 +273,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1696" height="1026" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18395658" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32997763" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49939686" weight="0.36800894" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49939686" visible="true" weight="0.36800894" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39932886" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -456,6 +378,50 @@
         <state relative-caret-position="-2142" />
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/data/undokumentiert/importSIB.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1075">
+          <caret line="156" column="32" selection-start-line="156" selection-start-column="32" selection-end-line="156" selection-end-column="32" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/dbf/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="74698">
+          <caret line="4415" column="21" selection-start-line="4415" selection-start-column="21" selection-end-line="4415" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/dbf/_index.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Roaming/Python/Python37/site-packages/dbf/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="67099">
+          <caret line="3968" selection-start-line="3968" selection-end-line="3968" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="731">
+            <caret line="43" selection-start-line="43" selection-end-line="43" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/setup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="323">
+          <caret line="19" column="6" selection-start-line="19" selection-start-column="6" selection-end-line="19" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/sibtools/ora.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="102">
@@ -468,74 +434,31 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sibtools/pg.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="7" column="43" selection-start-line="7" selection-start-column="43" selection-end-line="7" selection-end-column="43" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="283">
-            <caret line="43" selection-start-line="43" selection-end-line="43" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/data/undokumentiert/importSIB.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1075">
-          <caret line="156" column="32" selection-start-line="156" selection-start-column="32" selection-end-line="156" selection-end-column="32" />
+        <state relative-caret-position="102">
+          <caret line="6" column="3" selection-start-line="6" selection-start-column="3" selection-end-line="6" selection-end-column="3" />
           <folding>
-            <element signature="e#0#15#0" expanded="true" />
+            <element signature="e#129#172#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/setup.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="19" column="6" lean-forward="true" selection-start-line="19" selection-start-column="6" selection-end-line="19" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/AppData/Roaming/Python/Python37/site-packages/dbf/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="172">
-          <caret line="3968" selection-start-line="3968" selection-end-line="3968" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/dbf/_index.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/dbf/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="241">
-          <caret line="4415" column="21" selection-start-line="4415" selection-start-column="21" selection-end-line="4415" selection-end-column="38" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tests/TestImport.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="313">
-          <caret line="140" column="2" selection-start-line="140" selection-start-column="2" selection-end-line="140" selection-end-column="2" />
-          <folding>
-            <element signature="e#0#22#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="17">
+          <caret line="1" column="2" selection-start-line="1" selection-start-column="2" selection-end-line="1" selection-end-column="2" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sibtools/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-25">
-          <caret line="438" column="25" lean-forward="true" selection-start-line="438" selection-start-column="25" selection-end-line="438" selection-end-column="25" />
+        <state relative-caret-position="53">
+          <caret line="928" column="10" selection-start-line="928" selection-start-column="10" selection-end-line="928" selection-end-column="10" />
           <folding>
             <element signature="e#97#106#0" expanded="true" />
-            <element signature="e#339#5593#0" />
-            <element signature="e#5641#6034#0" />
-            <element signature="e#6081#8929#0" />
+            <element signature="e#378#5632#0" />
+            <element signature="e#5680#6073#0" />
+            <element signature="e#6120#8968#0" />
+            <element signature="e#9015#13664#0" />
           </folding>
         </state>
       </provider>

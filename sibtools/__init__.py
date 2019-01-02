@@ -733,6 +733,23 @@ class WfsData(DataSource):
         # print(soap)
         return response.content
 
+    def do_soap_request(self, soap):
+        """
+        Führt einen SOAP-Request an dem WFS durch
+        :param soap: SOAP-XML-Anfrage
+        :return: Antwort des WFS (XML)
+        :rtype: str
+        """
+        test = input("Achtung: Mit diesem Befehl werden ungeprüft Befehle an den WFS übermittelt."
+                     "Hierdurch können Daten ungewollt verändert werden - Auch ein Totalverlust von Daten ist möglich! "
+                     "Wollen Sie dieses wirklich? (JA): ")
+        if test == "JA":
+            print("Befehl wird ausgeführt...")
+            return self.__pretty_xml(self._soap_request(soap))
+        else:
+            print("Befehl wurde abgebrochen!")
+            return None
+
     @staticmethod
     def __pretty_xml(xml_data):
         """
@@ -909,7 +926,7 @@ class PublicWfsData (WfsData, DataTarget):
         :return: Liste von Dictionarys mit den Attributen
         :rtype: list
         """
-        col = self._get_columns()
+        # col = self._get_columns()
         for obj in self.__load_features(wfs_filter=self._wfs_filter):
             d = {}
             for i in obj.getchildren():
