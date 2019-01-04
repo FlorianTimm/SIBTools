@@ -7,14 +7,15 @@ Version: 2018.12.20
 import os
 from datetime import datetime
 
-import requests
+
 from xml.etree import ElementTree
 import xml.dom.minidom
 
 # Python 3 - abstrakte Klassen
 # import abc
 
-# Nicht-Standar-Python
+# Nicht-Standard-Python
+import requests
 from requests.auth import HTTPBasicAuth
 import dbf
 
@@ -213,6 +214,10 @@ class DataTarget (object):  # (abc.ABC):
         :rtype: bool
         """
         raise Exception("Abstrakte Methode aufgerufen")
+
+
+class Geometry (object):
+    pass
 
 
 class CsvData (DataSource, DataTarget):
@@ -466,7 +471,6 @@ class DbfData (DataSource, DataTarget):
 
 
 class WfsData(DataSource):
-    _wfs_filter = ""
 
     def __init__(self, url, feature_type=None, username=None, password=None):
         """
@@ -484,6 +488,7 @@ class WfsData(DataSource):
         self._feature_type = feature_type
         self._username = username
         self._password = password
+        self._wfs_filter = ""
 
     def set_filter(self, wfs_filter):
         """
@@ -499,6 +504,7 @@ class WfsData(DataSource):
         if wfs_filter.count("(") != wfs_filter.count(")"):
             raise Exception("Anzahl der öffnenden und schließenden Klammern unterscheidet sich")
         self._wfs_filter = "<ogc:Filter>" + self.__to_filter(wfs_filter) + "</ogc:Filter>"
+        # print(self._wfs_filter)
 
     def __to_filter(self, text):
         text = text.strip()
@@ -514,7 +520,7 @@ class WfsData(DataSource):
             if type(self) == PublicWfsData:
                 dft = self.describe_feature_type()
                 if text not in dft:
-                    raise Exception("Filter-Feld nicht vorhanden")
+                    raise Exception("Filter-Feld '" + text + "' nicht vorhanden")
                 if 'klartext' in dft[text]:
                     r += text + "/@luk"
                 else:
@@ -685,7 +691,12 @@ class WfsData(DataSource):
                                 '{http://www.w3.org/2001/XMLSchema}element'):
 
             zeile = {}
+
             attributes[obj.attrib['name']] = zeile
+
+            if 'type' in obj.attrib:
+                zeile['type'] = obj.attrib['type']
+
             ann = obj.find('{http://www.w3.org/2001/XMLSchema}annotation')
             if ann is None:
                 continue
@@ -717,6 +728,7 @@ class WfsData(DataSource):
                 zeile['type'] += "(" + digits.attrib['value'] + ")"
 
         self.__featureDescr[feature_type] = attributes
+        # print(attributes)
         return self.__featureDescr[feature_type]
 
     def _soap_request(self, soap):
@@ -763,6 +775,7 @@ class WfsData(DataSource):
 
 
 class PublicWfsData (WfsData, DataTarget):
+    __klartexte = {}
 
     def __init__(self, url, username, password, feature_type=None, kurzfassen=True, klartexte_anhaengen=False):
         """
@@ -782,13 +795,12 @@ class PublicWfsData (WfsData, DataTarget):
         :type klartexte_anhaengen: bool
         """
         super(PublicWfsData, self).__init__(url, feature_type, username, password)
-        self.__klartexte = {}
         self.daten = []
         self.row_number = -1
         self.__kurzfassen = kurzfassen
         self.__klartexte_anhaengen = klartexte_anhaengen
-
-    __columns = {}
+        self._wfs_filter = ""
+        self.__columns = {}
 
     def _get_columns(self):
         """
@@ -829,14 +841,17 @@ class PublicWfsData (WfsData, DataTarget):
         :return: Python-Typ
         :rtype: type
         """
+        # print(dft_type)
         if dft_type.find('string') > 0:
             return str
         elif dft_type.find('integer') > 0:
             return int
         elif dft_type.find('float') > 0:
             return float
-        elif dft_type.find('datetime') > 0 or dft_type.find('date') > 0:
+        elif dft_type.find('dateTime') > 0 or dft_type.find('date') > 0:
             return datetime
+        elif dft_type.find('Geometry') > 0:
+            return Geometry
         return str
 
     def _read_line(self):
@@ -934,6 +949,8 @@ class PublicWfsData (WfsData, DataTarget):
                 if i.text is not None:
                     d[att] = self.__transform_type(att, i.text)
                     continue
+                if len(i.getchildren()) > 0:
+                    d[att] = xml.etree.ElementTree.tostring(i.getchildren()[0]).decode("utf-8")
                 if 'luk' in i.attrib:
                     d[att] = self.__transform_type(att, i.attrib['luk'])
                 if self.__kurzfassen:

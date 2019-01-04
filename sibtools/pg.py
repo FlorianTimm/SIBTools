@@ -5,17 +5,15 @@ Ergänzung PostGIS-Schnittstelle
 
 Version: 2018.12.20
 """
-from sibtools import DataSource, DataTarget
+from sibtools import DataSource, DataTarget, Geometry
 import pg8000
+from datetime import datetime
 
 
 class PgData (DataSource, DataTarget):
     """
     PostGIS-Datenquelle/-ziel
     """
-
-    __columns = {}
-    __select_executed = False
 
     def __init__(self, host, port, db, username, password, select_sql=None, insert_table=None, insert_fieldnames=None):
         """
@@ -43,6 +41,46 @@ class PgData (DataSource, DataTarget):
         self.__select_sql = select_sql
         self.__insert_table = insert_table
         self.__insert_fieldnames = insert_fieldnames
+
+        self.__columns = {}
+        self.__select_executed = False
+
+    def create_table(self, datasource, insert_table):
+        """
+        Erstellt eine Tabelle gemäß der Datenquelle
+        :param datasource: Datenquelle
+        :type datasource: DataSource
+        :param insert_table: Tabelle, in welche importiert werden soll (schema.table)
+        :type insert_table: str
+        """
+
+        sql = "CREATE TABLE IF NOT EXISTS " \
+              + insert_table + \
+              " (gid serial primary key"
+        insert_fieldnames = []
+        zellen = datasource.get_columns()
+
+        typ = {str: "character varying",
+               int: "bigint",
+               bool: "boolean",
+               float: "decimal",
+               datetime: "timestamp",
+               Geometry: "geometry"}
+
+        for zelle in zellen.keys():
+            # print(zellen[zelle])
+            sql += ", " + zelle + " "
+            if zellen[zelle] in typ:
+                sql += typ[zellen[zelle]]
+            else:
+                sql += "character varying"
+            insert_fieldnames.append(zelle)
+
+        sql += ")"
+        print(sql)
+        self.__db_cursor.execute(sql)
+        self.__db_cursor.execute("TRUNCATE TABLE " + insert_table)
+        self.set_insert_config(insert_table, insert_fieldnames)
 
     def config_select(self, select_sql):
         """
@@ -132,6 +170,24 @@ class PgData (DataSource, DataTarget):
         self.__db_cursor.execute(self.__select_sql)
         self.__select_executed = True
 
+    def execute_sql(self, sql):
+        """
+        Führt einen SQL-Befehl auf der Datenbank durch
+        ACHTUNG: Führt Befehle direkt aus, kann zu Fehlern/Datenverlust führen
+        :param sql: SQL-Befehl
+        :type sql: str
+        """
+        self.__db_cursor.execute(sql)
+
+    def fetchone(self):
+        """
+        Gibt den nächsten Datensatz roh zurück
+        ACHTUNG: Führt Befehle direkt aus, kann zu Fehlern/Datenverlust führen
+        :return: Datensatz
+        :rtype: list
+        """
+        return self.__db_cursor.fetchone()
+
     def write(self, data_source):
         """
         Schreibt eine Zeile zum Importieren
@@ -144,13 +200,17 @@ class PgData (DataSource, DataTarget):
             raise Exception("Vorher INSERT-Config ausfüllen")
 
         liste = []
+        zellen = data_source.get_columns()
 
         sql = "INSERT INTO " + self.__insert_table + "("
         for c in self.__insert_fieldnames:
             sql += c + ","
         sql = sql[:-1] + ") values ("
-        for _ in self.__insert_fieldnames:
-            sql += "%s,"
+        for field in self.__insert_fieldnames:
+            if field in zellen and zellen[field] == Geometry:
+                sql += "ST_GeomFromGML(%s),"
+            else:
+                sql += "%s,"
         sql = sql[:-1] + ")"
 
         print(sql)
@@ -162,7 +222,10 @@ class PgData (DataSource, DataTarget):
                 break
             for field in self.__insert_fieldnames:
                 if field in data:
-                    zeile.append(data[field])
+                    d = data[field]
+                    zeile.append(str(d))
+                else:
+                    zeile.append(None)
             liste.append(zeile)
 
         self.__db_cursor.executemany(sql, liste)
