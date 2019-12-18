@@ -87,6 +87,7 @@ class OraData (DataSource):
 
         self.__check_query()
         self.__columns = {}
+        print(self.__ora_cursor.description)
         for field in self.__ora_cursor.description:
             self.__columns[field[0]] = self.__col_types[field[1]]
             if field[1] is cx_Oracle.NUMBER and field[5] > 0:

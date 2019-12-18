@@ -1,0 +1,2 @@
+pip install dbf pg8000 cx_Oracle --proxy=wall.lit.hamburg.de:80
+pip install --user -e G:\AG_Verkehrsdaten\DV-System\Eigenentwicklungen\Python-Programme\SIBTools\

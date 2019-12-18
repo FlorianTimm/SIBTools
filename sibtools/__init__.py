@@ -54,10 +54,12 @@ class DataSource (object):  # (abc.ABC):
             line[att] = self._add_columns[att]
 
         if self._von_netzknoten is not None and self._von_netzknoten in line:
-            line['vtkNummer'], line['vnkLfd'], line['vzusatz'] = self.__teile_nk(line[self._von_netzknoten])
+            line['vtkNummer'], line['vnkLfd'], line['vzusatz'] = self.__teile_nk(
+                line[self._von_netzknoten])
             del line[self._von_netzknoten]
         if self._nach_netzknoten is not None and self._nach_netzknoten in line:
-            line['ntkNummer'], line['nnkLfd'], line['nzusatz'] = self.__teile_nk(line[self._nach_netzknoten])
+            line['ntkNummer'], line['nnkLfd'], line['nzusatz'] = self.__teile_nk(
+                line[self._nach_netzknoten])
             del line[self._nach_netzknoten]
 
         return line
@@ -133,7 +135,8 @@ class DataSource (object):  # (abc.ABC):
 
         for att in self._rename_dict:
             if att in columns:
-                columns[self._rename_dict[att]] = columns[self._rename_dict[att]]
+                columns[self._rename_dict[att]
+                        ] = columns[self._rename_dict[att]]
 
         for att in self._remove_columns:
             if att in columns:
@@ -502,8 +505,10 @@ class WfsData(DataSource):
         """
         # prüfen
         if wfs_filter.count("(") != wfs_filter.count(")"):
-            raise Exception("Anzahl der öffnenden und schließenden Klammern unterscheidet sich")
-        self._wfs_filter = "<ogc:Filter>" + self.__to_filter(wfs_filter) + "</ogc:Filter>"
+            raise Exception(
+                "Anzahl der öffnenden und schließenden Klammern unterscheidet sich")
+        self._wfs_filter = "<ogc:Filter>" + \
+            self.__to_filter(wfs_filter) + "</ogc:Filter>"
         # print(self._wfs_filter)
 
     def __to_filter(self, text):
@@ -520,7 +525,8 @@ class WfsData(DataSource):
             if type(self) == PublicWfsData:
                 dft = self.describe_feature_type()
                 if text not in dft:
-                    raise Exception("Filter-Feld '" + text + "' nicht vorhanden")
+                    raise Exception("Filter-Feld '" + text +
+                                    "' nicht vorhanden")
                 if 'klartext' in dft[text]:
                     r += text + "/@luk"
                 else:
@@ -680,6 +686,7 @@ class WfsData(DataSource):
                 <wfs:TypeName>""" + feature_type + """</wfs:TypeName>
             </wfs:DescribeFeatureType>"""
         response = self._soap_request(soap)
+        # print(response)
         tree = ElementTree.fromstring(response)
         attributes = {}
         # print(self.pretty_xml(self._soap_request(soap)))
@@ -700,7 +707,8 @@ class WfsData(DataSource):
             ann = obj.find('{http://www.w3.org/2001/XMLSchema}annotation')
             if ann is None:
                 continue
-            zeile['bezeichnung'] = ann.find('{http://www.w3.org/2001/XMLSchema}documentation').text
+            zeile['bezeichnung'] = ann.find(
+                '{http://www.w3.org/2001/XMLSchema}documentation').text
 
             app = ann.find('{http://www.w3.org/2001/XMLSchema}appinfo')
             if app is None:
@@ -741,7 +749,8 @@ class WfsData(DataSource):
         # headers = {'content-type': 'application/soap+xml'}
         headers = {'content-type': 'text/xml'}
         login = HTTPBasicAuth(self._username, self._password)
-        response = requests.post(self._url, data=soap, headers=headers, auth=login)
+        response = requests.post(self._url, data=soap,
+                                 headers=headers, auth=login)
         # print(soap)
         return response.content
 
@@ -757,13 +766,13 @@ class WfsData(DataSource):
                      "Wollen Sie dieses wirklich? (JA): ")
         if test == "JA":
             print("Befehl wird ausgeführt...")
-            return self.__pretty_xml(self._soap_request(soap))
+            return self._pretty_xml(self._soap_request(soap))
         else:
             print("Befehl wurde abgebrochen!")
             return None
 
     @staticmethod
-    def __pretty_xml(xml_data):
+    def _pretty_xml(xml_data):
         """
         Verbessert die Lesbarkeit von XML-Daten (Zeilenumbrüche, Einrückungen)
         :param xml_data: XML-Daten ohne Zeilenumbrüche
@@ -794,7 +803,8 @@ class PublicWfsData (WfsData, DataTarget):
                 komplette Klartextdatensatz angehängt werden soll
         :type klartexte_anhaengen: bool
         """
-        super(PublicWfsData, self).__init__(url, feature_type, username, password)
+        super(PublicWfsData, self).__init__(
+            url, feature_type, username, password)
         self.daten = []
         self.row_number = -1
         self.__kurzfassen = kurzfassen
@@ -883,6 +893,35 @@ class PublicWfsData (WfsData, DataTarget):
         :return: Erfolgreich importiert?
         :rtype: bool
         """
+        liste = []
+        while True:
+            d = datasource.read_line()
+            if d is None:
+                break
+            liste.append(d)
+
+        for i in self._part_list(liste, 100):
+            if self._write_step(i):
+                continue
+
+            for j in self._part_list(i, 10):
+                if self._write_step(j):
+                    continue
+
+                for k in j:
+                    if not self._write_step([k]):
+                        print(k)
+        return
+
+    def _write_step(self, zeilen):
+        """
+        Schreibt Zeilen in die Datenbank
+        :param zeilen: Datenquelle des Importes
+        :type datasource: DataSource
+        :return: Erfolgreich importiert?
+        :rtype: bool
+        """
+
         req = """<?xml version="1.0" encoding="ISO-8859-1"?>
                 <wfs:Transaction service="WFS" version="1.0.0"
                 xmlns="http://xml.novasib.de"
@@ -896,18 +935,39 @@ class PublicWfsData (WfsData, DataTarget):
                 http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-transaction.xsd">
                 <wfs:Insert>"""
 
-        while True:
-            d = datasource.read_line()
-            if d is None:
-                break
-            req += self.__make_xml(d)
+        for zeile in zeilen:
+            req += self.__make_xml(zeile)
 
         req += "</wfs:Insert></wfs:Transaction>"
 
-        print(self.__pretty_xml(req))
+        # print(self._pretty_xml(req))
         antwort = self._soap_request(req)
-        print(antwort)
+        # print(antwort)
         return str(antwort).find("SUCCESS") > 0
+
+    def _part_list(self, liste, groesse):
+        """ 
+        Zerteilt Listen 
+        :param liste: Liste
+        :type liste: list
+        :param groesse: maximale Anzahl der Elemente
+        :type groesse: int
+        :rtype: list
+        """
+        ret = []
+        
+        small = []
+        for zeile in liste:
+            small.append(zeile)
+            if len(small) >= groesse:
+                ret.append(small)
+                small = []
+        if len(small) > 0:
+            ret.append(small)
+            small = []
+        
+        return ret
+
 
     def __make_xml(self, zeile):
         """
@@ -926,7 +986,8 @@ class PublicWfsData (WfsData, DataTarget):
             elif 'read_only' in felder[att]:
                 print("nur lesbar: " + att)
             elif 'klartext' in felder[att]:
-                kt = self.__get_klartext_href(felder[att]['klartext'], zeile[att])
+                kt = self.__get_klartext_href(
+                    felder[att]['klartext'], zeile[att])
                 xmlt += "<" + att + " xlink:href=\"" + kt + "\" typeName=\"" + felder[att]['klartext'] +\
                         "\" luk=\"" + str(zeile[att]) + "\" />"
             else:
@@ -950,7 +1011,8 @@ class PublicWfsData (WfsData, DataTarget):
                     d[att] = self.__transform_type(att, i.text)
                     continue
                 if len(i.getchildren()) > 0:
-                    d[att] = xml.etree.ElementTree.tostring(i.getchildren()[0]).decode("utf-8")
+                    d[att] = xml.etree.ElementTree.tostring(
+                        i.getchildren()[0]).decode("utf-8")
                 if 'luk' in i.attrib:
                     d[att] = self.__transform_type(att, i.attrib['luk'])
                 if self.__kurzfassen:
@@ -963,9 +1025,11 @@ class PublicWfsData (WfsData, DataTarget):
                 if 'typeName' in i.attrib and \
                         '{http://www.w3.org/1999/xlink}href' in i.attrib and \
                         i.attrib['typeName'] not in ['AsbAbschn', 'Projekt']:
-                    kt = self.__get_klartext(i.attrib['typeName'], i.attrib['{http://www.w3.org/1999/xlink}href'])
+                    kt = self.__get_klartext(
+                        i.attrib['typeName'], i.attrib['{http://www.w3.org/1999/xlink}href'])
                     for kt_att in kt:
-                        d[att + "." + kt_att] = self.__transform_type(att + "." + kt_att, kt[kt_att])
+                        d[att + "." + kt_att] = self.__transform_type(
+                            att + "." + kt_att, kt[kt_att])
             # print(d)
             self.daten.append(d)
 
@@ -997,7 +1061,8 @@ class PublicWfsData (WfsData, DataTarget):
         if href in kt['nach_href']:
             return kt['nach_href'][href]
         else:
-            raise Exception("Klartext zu " + href + " nicht in " + feature_type + " gefunden!")
+            raise Exception("Klartext zu " + href +
+                            " nicht in " + feature_type + " gefunden!")
 
     def __get_klartext_href(self, feature_type, klartext):
         """
@@ -1014,7 +1079,8 @@ class PublicWfsData (WfsData, DataTarget):
         if klartext in kt['nach_abk']:
             return kt['nach_abk'][klartext]['href']
         else:
-            raise Exception("Klartext " + klartext + " nicht in " + feature_type + " gefunden!")
+            raise Exception("Klartext " + klartext +
+                            " nicht in " + feature_type + " gefunden!")
 
     def __load_features(self, feature_type=None, wfs_filter=""):
         """
@@ -1065,7 +1131,8 @@ class PublicWfsData (WfsData, DataTarget):
         if len(kt['nach_abk']) == 0:
             print("Keine Klartexte zu " + klartext + " geladen")
         else:
-            print(str(len(kt['nach_abk'])) + " Klartexte zu " + klartext + " geladen")
+            print(str(len(kt['nach_abk'])) +
+                  " Klartexte zu " + klartext + " geladen")
 
         self.__klartexte[klartext] = kt
         return kt
